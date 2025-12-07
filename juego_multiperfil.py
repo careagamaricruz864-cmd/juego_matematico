@@ -1,0 +1,172 @@
+import streamlit as st
+import random
+
+# ===================================
+# CONFIGURACIÓN GENERAL
+# ===================================
+st.set_page_config(page_title="App Rosa Bonita", layout="centered")
+
+ADMIN_PASS = "1234"
+
+if "stats" not in st.session_state:
+    st.session_state.stats = {
+        "mejor_jugador": None,
+        "mejor_puntaje": 0,
+        "juego_mas_jugado": "-",
+        "partidas": 0
+    }
+
+# ===================================
+# ESTILOS ROSA BONITOS (MUY CUTE)
+# ===================================
+st.markdown("""
+<style>
+
+body {
+    background-color: #FFE6F2;
+    background-image: 
+        radial-gradient(circle at top left, #FFC4D6 10%, transparent 70%),
+        radial-gradient(circle at bottom right, #FFD6E9 10%, transparent 70%),
+        url('https://i.imgur.com/ISa7cKi.png');
+    background-size: cover;
+    font-family: 'Comic Sans MS', cursive;
+}
+
+/* Tarjeta principal */
+div.block-container {
+    background: rgba(255, 240, 245, 0.92);
+    padding: 40px;
+    border-radius: 30px;
+    box-shadow: 0px 0px 30px #ff8ec4;
+}
+
+/* Botones */
+div.stButton > button {
+    background-color: #FF4FA7;
+    color: white;
+    border-radius: 20px;
+    padding: 12px 25px;
+    border: none;
+    font-size: 18px;
+    transition: all 0.2s ease-in-out;
+}
+
+div.stButton > button:hover {
+    transform: scale(1.07);
+    box-shadow: 0px 0px 15px #ff5fbd;
+}
+
+/* Inputs */
+select, input {
+    border-radius: 15px !important;
+    border: 2px solid #FF8BC9 !important;
+}
+
+/* Títulos cursivos */
+h1, h2, h3 {
+    font-family: 'Brush Script MT', cursive;
+    color: #FF4FA7 !important;
+    text-shadow: 0px 0px 10px #ffc6e0;
+}
+
+/* Divisiones glitter */
+hr {
+    border: 0;
+    height: 2px;
+    background-image: linear-gradient(to right, rgba(255,0,150,0), #ff6fbf, rgba(255,0,150,0));
+    margin: 25px 0;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# =====================================================
+# FUNCIONES DE ESTADÍSTICAS
+# =====================================================
+def registrar_partida(juego, jugador, puntos):
+    st.session_state.stats["partidas"] += 1
+    st.session_state.stats["juego_mas_jugado"] = juego
+
+    if puntos > st.session_state.state.stats["mejor_puntaje"]:
+        st.session_state.stats["mejor_jugador"] = jugador
+        st.session_state.stats["mejor_puntaje"] = puntos
+
+
+# =====================================================
+# JUEGO: QUIZ DIFÍCIL
+# =====================================================
+def juego_quiz(nombre):
+    st.header("🧮✨ Quiz Matemático ")
+
+    operaciones = ["+", "-", "*", "/"]
+    op = random.choice(operaciones)
+
+    if op == "+":
+        a, b = random.randint(200, 900), random.randint(200, 900)
+        correcto = a + b
+    elif op == "-":
+        a, b = random.randint(300, 1000), random.randint(200, 900)
+        correcto = a - b
+    elif op == "*":
+        a, b = random.randint(20, 60), random.randint(10, 30)
+        correcto = a * b
+    else:
+        correcto = random.randint(5, 40)
+        b = random.randint(2, 20)
+        a = correcto * b
+
+    st.write(f"💗 ¿Cuánto es **{a} {op} {b}**?")
+    r = st.number_input("Tu respuesta:", step=1)
+
+    if st.button("Enviar respuesta ✨"):
+        if r == correcto:
+            st.success("¡Correcto! ✨🎀 +10 puntos")
+            registrar_partida("Quiz Matemático", nombre, 10)
+        else:
+            st.error(f"No… era {correcto} 💔")
+
+
+# =====================================================
+# ADMINISTRADOR
+# =====================================================
+def admin_view():
+    st.header("👑 Panel de Administrador")
+
+    stats = st.session_state.stats
+    st.write("📊 **Estadísticas generales**")
+    st.write(f"🏆 Mejor jugador: **{stats['mejor_jugador']}** ({stats['mejor_puntaje']} pts)")
+    st.write(f"🔥 Juego más jugado: **{stats['juego_mas_jugado']}**")
+    st.write(f"🎀 Partidas totales: **{stats['partidas']}**")
+
+
+# =====================================================
+# PANEL JUGADOR
+# =====================================================
+def jugador_view(nombre):
+    st.header(f"🎀 Bienvenido {nombre} 💗")
+    juego_quiz(nombre)
+
+
+# =====================================================
+# MENU PRINCIPAL
+# =====================================================
+st.title("🌸 Bienvenidos ✨")
+
+rol = st.selectbox("Elige tu rol:", ["Jugador", "Administrador", "Invitado"])
+
+# ADMIN
+if rol == "Administrador":
+    clave = st.text_input("Contraseña:", type="password")
+    if clave == ADMIN_PASS:
+        admin_view()
+    else:
+        st.error("Contraseña incorrecta 💔")
+
+# JUGADOR
+elif rol == "Jugador":
+    nombre = st.text_input("Escribe tu nombre:")
+    if nombre:
+        jugador_view(nombre)
+
+# INVITADO
+else:
+    st.info("Solo puedes mirar 💗")
